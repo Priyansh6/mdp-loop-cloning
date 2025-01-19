@@ -21,6 +21,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(SOURCES
     src/main.cpp
+    src/microbenchmark.cpp
 )
 
 # Add source to this project's executable.

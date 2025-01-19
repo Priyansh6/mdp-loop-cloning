@@ -1,37 +1,24 @@
+#include "microbenchmark.h"
+
 #include <array>
+#include <cstddef>
 
-std::array<int, 1000> l;
-std::array<int, 1000> k;
+#define CLONE 1
 
-void test_aliases(int* a, int* b, std::size_t n)
-{
-  for (std::size_t i = 0; i < n; i++) {
-    a[i] = b[i];
-    b[i] += 1;
-  }
-}
+constexpr std::size_t N = 1000000;
 
-void test_aliases_cloned(int* a, int* b, std::size_t n)
-{
-  if (a == b) {
-    for (std::size_t i = 0; i < n; i++) {
-      a[i] = b[i];
-      b[i] += 1;
-    }
-  } else {
-    for (std::size_t i = 0; i < n; i++) {
-      a[i] = b[i];
-      b[i] += 1;
-    }
-  }
-}
+std::array<int, N> l;
+std::array<int, N> k;
 
 int main()
 {
-  test_aliases(&l.front(), &k.front(), 1000);
-  test_aliases(&l.front(), &l.front(), 1000);
+#if CLONE
+  test_aliases_cloned(&l.front(), &l.front(), N);
+  test_aliases_cloned(&l.front(), &k.front(), N);
+#else
+  test_aliases(&l.front(), &l.front(), N);
+  test_aliases(&l.front(), &k.front(), N);
+#endif
 
-  test_aliases_cloned(&l.front(), &k.front(), 1000);
-  test_aliases_cloned(&l.front(), &l.front(), 1000);
   return 0;
 }

@@ -39,4 +39,4 @@ Thumbs.db
 scripts/venv
 
 # Gem5
-m5out
+sim-result-*/
