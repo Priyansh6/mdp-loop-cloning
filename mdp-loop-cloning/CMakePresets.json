@@ -1,0 +1,68 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 29
+    },
+    "configurePresets": [
+        {
+            "name": "conf-common",
+            "description": "General settings that apply to all configurations",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}"
+        },
+        {
+            "name": "conf-unixlike-clang-common",
+            "description": "Unix-like OS settings for clang toolchain",
+            "hidden": true,
+            "inherits": "conf-common",
+            "condition": {
+                "type": "inList",
+                "string": "${hostSystemName}",
+                "list": [
+                    "Linux",
+                    "Darwin"
+                ]
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "${sourceDir}/../llvm/build/bin/clang",
+                "CMAKE_CXX_COMPILER": "${sourceDir}/../llvm/build/bin/clang++",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -pedantic -Werror"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+                    "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+                }
+            }
+        },
+        {
+            "name": "unixlike-armv8-a-clang-debug",
+            "displayName": "ARMv8-A Clang Debug",
+            "description": "Target Unix-like OS with the Clang compiler, debug build type",
+            "inherits": "conf-unixlike-clang-common",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "unixlike-armv8-a-clang-release-debuginfo",
+            "displayName": "ARMv8-A Clang Release (with debug info)",
+            "description": "Target Unix-like OS with the Clang compiler, release with debug info build type",
+            "inherits": "conf-unixlike-clang-common",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "unixlike-armv8-a-clang-release",
+            "displayName": "ARMv8-A Clang Release",
+            "description": "Target Unix-like OS with the Clang compiler, release build type",
+            "inherits": "conf-unixlike-clang-common",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ]
+}

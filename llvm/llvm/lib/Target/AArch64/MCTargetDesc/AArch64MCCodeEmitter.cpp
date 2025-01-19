@@ -714,7 +714,7 @@ void AArch64MCCodeEmitter::encodeInstruction(const MCInst &MI,
   }
 
   uint64_t Binary;
-  if (MI.label) Binary = (((uint64_t)1 << 32) - 1);
+  if (false && MI.label) Binary = (((uint64_t)1 << 32) - 1);
   else Binary = getBinaryCodeForInstr(MI, Fixups, STI);
   support::endian::write<uint32_t>(CB, Binary, llvm::endianness::little);
   ++MCNumEmitted; // Keep track of the # of mi's emitted.

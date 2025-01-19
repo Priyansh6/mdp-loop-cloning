@@ -1,4 +1,3 @@
-#if 0
 #include <array>
 
 std::array<int, 1000> l;
@@ -26,15 +25,13 @@ void test_aliases_cloned(int* a, int* b, std::size_t n)
     }
   }
 }
-#endif
 
 int main()
 {
-  // test_aliases(&l.front(), &k.front(), 1000);
-  // test_aliases(&l.front(), &l.front(), 1000);
+  test_aliases(&l.front(), &k.front(), 1000);
+  test_aliases(&l.front(), &l.front(), 1000);
 
-  // test_aliases_cloned(&l.front(), &k.front(), 1000);
-  // test_aliases_cloned(&l.front(), &l.front(), 1000);
-  int a = 1;
+  test_aliases_cloned(&l.front(), &k.front(), 1000);
+  test_aliases_cloned(&l.front(), &l.front(), 1000);
   return 0;
 }

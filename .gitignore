@@ -34,3 +34,9 @@ $RECYCLE.BIN/
 .TemporaryItems
 ehthumbs.db
 Thumbs.db
+
+# Python
+scripts/venv
+
+# Gem5
+m5out
