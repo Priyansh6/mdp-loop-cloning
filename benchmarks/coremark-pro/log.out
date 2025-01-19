@@ -1,0 +1,44 @@
+benchmarks/darkmark/parser/ezxml.c:376:27: warning: unsequenced modification and access to 's' [-Wunsequenced]
+            while (*(n = (++s) + th_strspn(s, EZXML_WS)) && *n != '>') {
+                          ^                ~
+FUNC:ezxml_idx:1
+FUNC:ezxml_attr:15
+FUNC:ezxml_vget:17
+FUNC:ezxml_pi:1
+FUNC:ezxml_err:3,4,5
+FUNC:ezxml_add_child:3,4,17,22,23,24,25
+FUNC:ezxml_proc_inst:27
+FUNC:ezxml_internal_dtd:23,47
+FUNC:ezxml_free_attr:1
+FUNC:ezxml_parse_str:4,5
+FUNC:ezxml_toxml:4
+FUNC:ezxml_error:1
+FUNC:ezxml_insert:3,4,12,13,14,20,21
+FUNC:ezxml_set_attr:22
+FUNC:ezxml_cut:5,19
+1 warning generated.
+FUNC:mith_wl_get_connections:5
+FUNC:bench_thread:29
+FUNC:mith_report_results:6,7,8,9,10
+FUNC:mith_wl_reset:4
+FUNC:mith_wl_get_next:3,4,5
+mith/src/th_getopt.c:43:1: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C2x [-Wdeprecated-non-prototype]
+exchange (argv)
+^
+mith/src/th_getopt.c:102:1: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C2x [-Wdeprecated-non-prototype]
+_getopt_initialize (argc, argv, optstring)
+^
+mith/src/th_getopt.c:134:1: warning: a function definition without a prototype is deprecated in all versions of C and is not supported in C2x [-Wdeprecated-non-prototype]
+th_getopt_long (argc, argv, optstring, longopts, longind)
+^
+FUNC:th_getopt_long:9,10,38,54,116,117
+3 warnings generated.
+FUNC:th_parse_val_type:5,6
+FUNC:th_crcbuffer:2
+FUNC:ee_list_isearch:2,3,4
+FUNC:ee_list_dsearch:2,3,4
+FUNC:fromint_f64_vector:7
+FUNC:fromint_f32_vector:7
+FUNC:fromint_f64_01_vector:9
+FUNC:fromint_f32_01_vector:12
+FUNC:mixed_f64_vector:6
