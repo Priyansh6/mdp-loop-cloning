@@ -19,15 +19,15 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(SOURCES
-    src/main.cpp
-    src/microbenchmark.cpp
+set(SIMPLE_SS_SOURCES
+    src/SimpleSS/Main.cpp
+    src/SimpleSS/Variants.cpp
     src/utils.cpp
 )
 
 # Add source to this project's executable.
-add_executable(MdpLoopCloning ${SOURCES})
+add_executable(SimpleSS ${SIMPLE_SS_SOURCES})
 
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
-target_include_directories(MdpLoopCloning PRIVATE ${SRC_DIR})
-target_link_libraries(MdpLoopCloning -static)
+target_include_directories(SimpleSS PRIVATE ${SRC_DIR})
+target_link_libraries(SimpleSS -static)
