@@ -1,4 +1,4 @@
-#include "SimpleSS/Variants.cpp"
+#include "SimpleSS/Variants.h"
 
 #include <array>
 #include <cstddef>
