@@ -10,7 +10,7 @@ set(CMAKE_C_COMPILER_TARGET "aarch64-linux-gnu")
 set(CMAKE_CXX_COMPILER_TARGET "aarch64-linux-gnu")
 
 # Set target-specific flags
-add_compile_options(-march=v8a)
+add_compile_options(-march=v8a -fno-vectorize)
 
 project(mdp-loop-cloning)
 
@@ -22,6 +22,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(SOURCES
     src/main.cpp
     src/microbenchmark.cpp
+    src/utils.cpp
 )
 
 # Add source to this project's executable.

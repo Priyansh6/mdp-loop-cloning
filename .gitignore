@@ -38,5 +38,6 @@ Thumbs.db
 # Python
 scripts/venv
 
-# Gem5
+# Project Specific
 sim-result-*/
+disassembled/

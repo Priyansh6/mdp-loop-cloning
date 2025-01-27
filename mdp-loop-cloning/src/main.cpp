@@ -12,13 +12,15 @@ std::array<int, N> k;
 
 int main()
 {
+  int sum = 0;
+
 #if CLONE
-  test_aliases_cloned(&l.front(), &l.front(), N);
-  test_aliases_cloned(&l.front(), &k.front(), N);
+  sum += test_aliases_cloned(&l.front(), &l.front(), 10);
+  sum += test_aliases_cloned(&l.front(), &k.front(), N);
 #else
-  test_aliases(&l.front(), &l.front(), N);
-  test_aliases(&l.front(), &k.front(), N);
+  sum += test_aliases(&l.front(), &l.front(), 10);
+  sum += test_aliases(&l.front(), &k.front(), N);
 #endif
 
-  return 0;
+  return sum;
 }
