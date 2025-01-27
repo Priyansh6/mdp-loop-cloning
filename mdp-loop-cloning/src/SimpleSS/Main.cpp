@@ -10,6 +10,8 @@ constexpr std::size_t N = 1000000;
 std::array<int, N> l;
 std::array<int, N> k;
 
+// Simple example to demonstrate potential gains for Store Sets by cloning simple loops containing a store and a load
+// All performance gains are due to a large reduction in false dependencies between potentially aliasing stores and loads
 int main()
 {
   int sum = 0;

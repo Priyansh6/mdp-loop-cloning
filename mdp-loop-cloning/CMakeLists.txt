@@ -22,7 +22,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(SIMPLE_SS_SOURCES
     src/SimpleSS/Main.cpp
     src/SimpleSS/Variants.cpp
-    src/utils.cpp
+    src/Utils.cpp
 )
 
 # Add source to this project's executable.
