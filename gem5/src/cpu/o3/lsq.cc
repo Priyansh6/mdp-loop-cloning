@@ -334,12 +334,6 @@ LSQ::getStoreHeadSeqNum(ThreadID tid)
     return thread.at(tid).getStoreHeadSeqNum();
 }
 
-InstSeqNum
-LSQ::findUnresolvedStore(ThreadID tid, DynInstPtr inst, InstSeqNum last_dep_seqnum)
-{
-    return thread.at(tid).findUnresolvedStore(inst, last_dep_seqnum);
-}
-
 int LSQ::getCount(ThreadID tid) { return thread.at(tid).getCount(); }
 
 int LSQ::numLoads(ThreadID tid) { return thread.at(tid).numLoads(); }

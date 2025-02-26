@@ -40,4 +40,5 @@ scripts/venv
 
 # Project Specific
 sim-result-*/
+coremark-sim-result-*/
 disassembled/

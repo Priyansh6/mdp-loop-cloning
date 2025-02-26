@@ -34,7 +34,6 @@
 #include "debug/StoreSet.hh"
 #include "cpu/o3/inst_queue.hh"
 
-extern std::map<uint64_t, uint8_t> pnd_violation_count;
 
 namespace gem5
 {
@@ -42,8 +41,8 @@ namespace gem5
 namespace o3
 {
 
-StoreSet::StoreSet(uint64_t clear_period, int _SSIT_size, int _LFST_size, MemDepUnit *_memDep)
-    : clearPeriod(clear_period), SSITSize(_SSIT_size), LFSTSize(_LFST_size), memDep(_memDep)
+StoreSet::StoreSet(const BaseO3CPUParams &params, MemDepUnit *_memDep)
+    : clearPeriod(params.store_set_clear_period), SSITSize(params.SSITSize), LFSTSize(params.LFSTSize), memDep(_memDep)
 {
     DPRINTF(StoreSet, "StoreSet: Creating store set object.\n");
     DPRINTF(StoreSet, "StoreSet: SSIT size: %i, LFST size: %i.\n",
@@ -85,11 +84,11 @@ StoreSet::~StoreSet()
 }
 
 void
-StoreSet::init(uint64_t clear_period, int _SSIT_size, int _LFST_size, MemDepUnit *_memDep)
+StoreSet::init(const BaseO3CPUParams &params, MemDepUnit *_memDep)
 {
-    SSITSize = _SSIT_size;
-    LFSTSize = _LFST_size;
-    clearPeriod = clear_period;
+    SSITSize = params.SSITSize;
+    LFSTSize = params.LFSTSize;
+    clearPeriod = params.store_set_clear_period;
     memDep = _memDep;
 
     DPRINTF(StoreSet, "StoreSet: Creating store set object.\n");
@@ -121,8 +120,7 @@ StoreSet::init(uint64_t clear_period, int _SSIT_size, int _LFST_size, MemDepUnit
 }
 
 
-void
-StoreSet::violation(Addr store_PC, Addr load_PC)
+void StoreSet::violation(Addr load_PC, InstSeqNum load_seq_num, InstSeqNum store_seq_num, Addr store_PC, std::ptrdiff_t storeQueueDistance, bool predicted, unsigned predictedPathInex, uint64_t predictedHash, BranchHistory branchHistory) 
 {
     int load_index = calcIndex(load_PC);
     int store_index = calcIndex(store_PC);
@@ -164,9 +162,6 @@ StoreSet::violation(Addr store_PC, Addr load_PC)
 
         intended_index[store_index] = store_PC;
 
-        if (intended_index[load_index] != load_PC)
-            ++(memDep->stats).SSITCollisions;
-
         DPRINTF(StoreSet, "StoreSet: Load had a valid store set.  Adding "
                 "store to that set: %i for load %#x, store %#x\n",
                 load_SSID, load_PC, store_PC);
@@ -179,20 +174,12 @@ StoreSet::violation(Addr store_PC, Addr load_PC)
 
         intended_index[load_index] = load_PC;
 
-        if (intended_index[store_index] != store_PC)
-            ++(memDep->stats).SSITCollisions;
-
         DPRINTF(StoreSet, "StoreSet: Store had a valid store set: %i for "
                 "load %#x, store %#x\n",
                 store_SSID, load_PC, store_PC);
     } else {
         SSID load_SSID = SSIT[load_index];
         SSID store_SSID = SSIT[store_index];
-
-        if (intended_index[load_index] != load_PC)
-            ++(memDep->stats).SSITCollisions;
-        if (intended_index[store_index] != store_PC)
-            ++(memDep->stats).SSITCollisions;
 
         assert(load_SSID < LFSTSize && store_SSID < LFSTSize);
 
@@ -251,9 +238,6 @@ StoreSet::insertStore(Addr store_PC, InstSeqNum store_seq_num, ThreadID tid)
     } else {
         store_SSID = SSIT[index];
 
-        if (intended_index[index] != store_PC)
-            ++(memDep->stats).SSITCollisions;
-
         assert(store_SSID < LFSTSize);
 
         // Update the last store that was fetched with the current one.
@@ -270,9 +254,11 @@ StoreSet::insertStore(Addr store_PC, InstSeqNum store_seq_num, ThreadID tid)
     }
 }
 
-InstSeqNum
-StoreSet::checkInst(Addr PC)
+PredictionResult StoreSet::checkInst(Addr PC, InstSeqNum load_seq_num, BranchHistory branchHistory)
 {
+
+    struct PredictionResult prediction = {0,0,0,0};
+
     int index = calcIndex(PC);
 
     int inst_SSID;
@@ -284,7 +270,7 @@ StoreSet::checkInst(Addr PC)
                 PC, index);
 
         // Return 0 if there's no valid entry.
-        return 0;
+        return prediction;
     } else {
 
         inst_SSID = SSIT[index];
@@ -298,15 +284,13 @@ StoreSet::checkInst(Addr PC)
             DPRINTF(StoreSet, "Inst %#x with index %i and SSID %i had no "
                     "dependency\n", PC, index, inst_SSID);
 
-            return 0;
+            return prediction;
         } else {
             DPRINTF(StoreSet, "Inst %#x with index %i and SSID %i had LFST "
                     "inum of %i\n", PC, index, inst_SSID, LFST[inst_SSID]);
 
-            if (intended_index[index] != PC)
-                ++(memDep->stats).SSITCollisions;
-
-            return LFST[inst_SSID];
+            prediction.seqNum = LFST[inst_SSID];
+            return prediction;
         }
     }
 }
@@ -337,9 +321,6 @@ StoreSet::issued(Addr issued_PC, InstSeqNum issued_seq_num, bool is_store)
     }
 
     store_SSID = SSIT[index];
-
-    if (intended_index[index] != issued_PC)
-        ++(memDep->stats).SSITCollisions;
 
     assert(store_SSID < LFSTSize);
 
@@ -398,7 +379,6 @@ StoreSet::clear()
 
     intended_index.clear();
 
-    pnd_violation_count.clear();
 }
 
 void

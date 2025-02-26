@@ -69,32 +69,6 @@
 #include "sim/full_system.hh"
 #include "sim/system.hh"
 
-std::map<uint64_t, uint8_t> pnd_violation_count;
-std::unordered_set<uint64_t> pnd_addresses;
-static void load_addresses(){
-    auto filename_env = std::getenv("ADDR_FILE");
-    if (filename_env == nullptr) return;
-    std::string filename = std::string(std::getenv("ADDR_FILE"));
-
-    std::ifstream inputFile(filename);
-
-    if (!inputFile.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        exit(1);
-    }
-
-    std::string line;
-    while (std::getline(inputFile, line)) {
-        std::istringstream iss(line);
-        uint64_t address;
-        if (iss >> address) {
-            pnd_addresses.insert(address);
-        } else {
-            std::cerr << "Invalid input: " << line << std::endl;
-        }
-    }
-}
-
 namespace gem5
 {
 
@@ -169,8 +143,6 @@ Fetch::Fetch(CPU *_cpu, const BaseO3CPUParams &params)
 
     // Get the size of an instruction.
     instSize = decoder[0]->moreBytesSize();
-
-    load_addresses();
 }
 
 std::string Fetch::name() const { return cpu->name() + ".fetch"; }
@@ -1078,12 +1050,6 @@ Fetch::buildInst(ThreadID tid, StaticInstPtr staticInst,
 #else
     instruction->traceData = NULL;
 #endif
-
-    if (instruction->isLoad() && pnd_addresses.count(this_pc.instAddr()) &&
-        (pnd_violation_count.find(this_pc.instAddr()) == pnd_violation_count.end() ||
-        pnd_violation_count[this_pc.instAddr()] <= 2)) {
-        instruction->setPND();
-    }
 
     // Add instruction to the CPU's list of instructions.
     instruction->setInstListIt(cpu->addInst(instruction));

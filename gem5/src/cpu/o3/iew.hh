@@ -292,6 +292,8 @@ class IEW
      */
     void tick();
 
+    CPU *getCPU() { return cpu; }
+
   private:
     /** Updates execution stats based on the instruction. */
     void updateExeInstStats(const DynInstPtr &inst);
@@ -447,7 +449,6 @@ class IEW
         statistics::Scalar predictedTakenIncorrect;
         /** Stat for total number of incorrect predicted not taken branches. */
         statistics::Scalar predictedNotTakenIncorrect;
-        statistics::Scalar PNDLoadViolations;
         /** Stat for total number of mispredicted branches detected at
          *  execute. */
         statistics::Formula branchMispredicts;

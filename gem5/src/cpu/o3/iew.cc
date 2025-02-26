@@ -46,7 +46,6 @@
 #include "cpu/o3/iew.hh"
 
 #include <queue>
-#include <map>
 
 #include "cpu/checker/cpu.hh"
 #include "cpu/o3/dyn_inst.hh"
@@ -58,8 +57,6 @@
 #include "debug/IEW.hh"
 #include "debug/O3PipeView.hh"
 #include "params/BaseO3CPU.hh"
-
-extern std::map<uint64_t, uint8_t> pnd_violation_count;
 
 namespace gem5
 {
@@ -168,8 +165,6 @@ IEW::IEWStats::IEWStats(CPU *cpu)
              "Number of times the IQ has become full, causing a stall"),
     ADD_STAT(lsqFullEvents, statistics::units::Count::get(),
              "Number of times the LSQ has become full, causing a stall"),
-    ADD_STAT(memOrderViolationEvents, statistics::units::Count::get(),
-             "Number of memory order violations"),
     ADD_STAT(predictedTakenIncorrect, statistics::units::Count::get(),
              "Number of branches that were predicted taken incorrectly"),
     ADD_STAT(predictedNotTakenIncorrect, statistics::units::Count::get(),
@@ -177,8 +172,6 @@ IEW::IEWStats::IEWStats(CPU *cpu)
     ADD_STAT(branchMispredicts, statistics::units::Count::get(),
              "Number of branch mispredicts detected at execute",
              predictedTakenIncorrect + predictedNotTakenIncorrect),
-    ADD_STAT(PNDLoadViolations, statistics::units::Count::get(),
-             "Number of mem order violations triggered by a PND load"),
     executedInstStats(cpu),
     ADD_STAT(instsToCommit, statistics::units::Count::get(),
              "Cumulative count of insts sent to commit"),
@@ -414,6 +407,12 @@ IEW::squash(ThreadID tid)
     }
 
     emptyRenameInsts(tid);
+
+    //revert branch history
+    BranchHistory &decodedBranchHistory = cpu->getDecode()->getBranchHistory();
+    while (!decodedBranchHistory.empty() && decodedBranchHistory.front().seqNum > fromCommit->commitInfo[tid].doneSeqNum) {
+        decodedBranchHistory.pop_front();
+    }
 }
 
 void
@@ -436,6 +435,12 @@ IEW::squashDueToBranch(const DynInstPtr& inst, ThreadID tid)
         toCommit->includeSquashInst[tid] = false;
 
         wroteToTimeBuffer = true;
+    }
+
+    //revert branch history
+    BranchHistory decodedBranchHistory = cpu->getDecode()->getBranchHistory();
+    while (!decodedBranchHistory.empty() && decodedBranchHistory.front().seqNum >= inst->seqNum) {
+        decodedBranchHistory.pop_front();
     }
 
 }
@@ -463,6 +468,12 @@ IEW::squashDueToMemOrder(const DynInstPtr& inst, ThreadID tid)
         toCommit->includeSquashInst[tid] = true;
 
         wroteToTimeBuffer = true;
+    }
+
+    //revert branch history
+    BranchHistory decodedBranchHistory = cpu->getDecode()->getBranchHistory();
+    while (!decodedBranchHistory.empty() && decodedBranchHistory.front().seqNum >= inst->seqNum) {
+        decodedBranchHistory.pop_front();
     }
 }
 
@@ -1295,34 +1306,11 @@ IEW::executeInsts()
                         "[sn:%lli], inst PC: %s [sn:%lli]. Addr is: %#x.\n",
                         violator->pcState(), violator->seqNum,
                         inst->pcState(), inst->seqNum, inst->physEffAddr);
-
+                
                 fetchRedirect[tid] = true;
-
-                Addr violator_pc = violator->pcState().instAddr();
-
-                if (!violator->isPND()) {
-                    // Tell the instruction queue that a violation has occured.
-                    instQueue.violation(inst, violator);
-                }
-                else ++iewStats.PNDLoadViolations;
-                //COMPILER ORACLE
-                /*
-                else if (pnd_violation_count.find(violator_pc) == pnd_violation_count.end()) {
-                    pnd_violation_count[violator_pc] = 1;
-                    ++iewStats.PNDLoadViolations;
-                }
-                else {
-                    pnd_violation_count[violator_pc] += 1;
-                    if (pnd_violation_count[violator_pc] > 2)
-                        violator->unsetPND();
-                    ++iewStats.PNDLoadViolations;
-                }
-                */
 
                 // Squash.
                 squashDueToMemOrder(violator, tid);
-
-                ++iewStats.memOrderViolationEvents;
             }
         } else {
             // Reset any state associated with redirects that will not
@@ -1338,8 +1326,6 @@ IEW::executeInsts()
                         inst->physEffAddr);
                 DPRINTF(IEW, "Violation will not be handled because "
                         "already squashing\n");
-
-                ++iewStats.memOrderViolationEvents;
             }
         }
     }

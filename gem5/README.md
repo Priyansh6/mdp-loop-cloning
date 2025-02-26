@@ -1,14 +1,38 @@
-# Main Changes
+# The PHAST Memory Dependence predictor
+This Gem5 fork implements the PHAST MDP (https://ieeexplore.ieee.org/document/10476400), a new MDP algorithm which can achieve very high accuracy at low hardware budgets. 
+PHAST is much more complex than Store Sets, which Gem5 implements by default, and so required several changes outside of just the MDP unit to work properly. These include:
+- Moving memory order violation training from IEW to commit, to avoid training on misspeculated paths.
+- Keeping a record of recently executed branches from both decode and commit to index and train the predictor with respectively.
+- Changing the MDP and depPred interfaces to include additional methods and arguments needed by PHAST, while also keeping it generic to allow continued use of Store Sets if desired.
+- Adding a memDepInfo struct to DynInst objects to track necessary information as loads are executed. 
+- Adding an additional commit/ROB status to specify if squashing due to memory order violation.
+- Preventing stores from triggering a memory order violation with loads that have either already forwarded from a younger store, or already violated with a younger store.
 
-> [!IMPORTANT]  
-> This fork of the gem5 repository is maintained by the CAPS-Group of the University of Murcia (Spain)
-> 
-> In the case of using the full simulator or parts of code that were not from the original gem5, additional citation to this repository is required (https://github.com/CAPS-UMU/gem5).
-
+Furthermore, this Gem5 was originally based on a modified fork from the University of Murcia (https://github.com/CAPS-UMU/gem5). These changes include:
 - Fixed TAGE_SC_L_64K (based on https://github.com/useredsa/spec_tage_scl) now it is called TAGE_EMILIO
 - Added (and fixed) the AssociativeBTB (based on https://github.com/dhschall/gem5-fdp)
 - Ported ITTAGE indirect target predictor (from https://github.com/OpenXiangShan/GEM5)
-- Several correctness and preformance fixes
+- Several correctness and performance fixes
+
+## Using and Configuring PHAST
+There isn't currently a nice python interface to select the MDP algorithm like with choosing the branch predictor. For now, just change the include file and type of the `depPred` class in `mem_dep_unit.hh` like so:
+```
+ //#include "cpu/o3/store_set.hh"
+ #include "cpu/o3/phast.hh"
+ ...
+ //StoreSet depPred;
+ PHAST depPred;   
+ ```
+
+PHAST's parameters can be configured in `BaseCPUO3.py` though. They are:
+- phast_num_rows: Number of rows per table
+- phast_associativity: Number of entries per row
+- phast_tag_bits: Number of bits used for entry tags
+- phast_max_counter: Max entry confidence counter value
+
+## Reporting bugs
+This implementation is new and likely still has some bugs. While it has been tested against Spec2017, your workloads may have higher violations with PHAST than with Store Sets. If this is the case, please share the details in an issue! First though, ensure the problem does not persist when `phast_max_counter` is set to a very high value, like 100. Some workloads will have more violations than Store Sets simply because we get unlucky with the frequency of specific memory dependencies, but this isn't a bug. Another issue may be due to the `depCheckShift` parameter also in `BaseCPUO3.py`. When this is >0, it introduces false dependencies which break an assumption PHAST makes that loads are usually only dependent on a single store. Ensure PHAST does not beat Store Sets when this is also set to 0. We are currently investigating ways to address problems caused by this parameter. 
+Also note that tests have only been run with syscall emulation mode, and full system emulation may uncover new problems too.
 
 # The gem5 Simulator
 

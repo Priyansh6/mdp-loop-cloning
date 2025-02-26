@@ -541,10 +541,6 @@ class LSQUnit
     } stats;
 
   public:
-
-    /** Returns seq num of youngest unresolved store. */
-    InstSeqNum findUnresolvedStore(DynInstPtr inst, InstSeqNum last_dep_seqnum);
-
     /** Executes the load at the given index. */
     Fault read(LSQRequest *request, ssize_t load_idx);
 

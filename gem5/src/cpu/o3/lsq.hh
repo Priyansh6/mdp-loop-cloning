@@ -75,6 +75,7 @@ class LSQUnit;
 class LSQ
 {
   public:
+
     class LSQRequest;
 
     /**
@@ -739,8 +740,6 @@ class LSQ
 
     /** Returns the sequence number of the head of the store queue. */
     InstSeqNum getStoreHeadSeqNum(ThreadID tid);
-
-    InstSeqNum findUnresolvedStore(ThreadID tid, DynInstPtr inst, InstSeqNum last_dep_seqnum);
 
     /** Returns the number of instructions in all of the queues. */
     int getCount();

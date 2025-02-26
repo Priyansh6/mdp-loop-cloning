@@ -197,9 +197,6 @@ class StaticInst : public RefCounted, public StaticInstFlags
     bool isHtmStart() const { return flags[IsHtmStart]; }
     bool isHtmStop() const { return flags[IsHtmStop]; }
     bool isHtmCancel() const { return flags[IsHtmCancel]; }
-    bool isPND() const { return flags[IsPND]; }
-    void setPND() { flags[IsPND] = true; }
-    void unsetPND() { flags[IsPND] = false; }
 
     bool isInvalid() const { return flags[IsInvalid]; }
 

@@ -563,11 +563,21 @@ LSQUnit::checkViolations(typename LoadQueue::iterator& loadIt,
                 // squash and refetch.
                 if (memDepViolator && ld_inst->seqNum > memDepViolator->seqNum)
                     break;
+                // Check this load hasn't already forwarded from a younger store
+                if (inst->seqNum < ld_inst->memDepInfo.forwardedFrom ||
+                    inst->seqNum < ld_inst->memDepInfo.violatingStoreSeqNum){
+                    ++loadIt;
+                    continue;
+                }
 
                 DPRINTF(LSQUnit, "Detected fault with inst [sn:%lli] and "
                         "[sn:%lli] at address %#x\n",
                         inst->seqNum, ld_inst->seqNum, ld_eff_addr1);
+
                 memDepViolator = ld_inst;
+                ld_inst->memDepInfo.violatingStoreSeqNum = inst->seqNum;
+                ld_inst->memDepInfo.violatingStorePC = inst->pcState().instAddr();
+                ld_inst->memDepInfo.storeQueueDistance = ld_inst->sqIt - inst->sqIt;
 
                 ++stats.memOrderViolation;
 
@@ -1284,20 +1294,20 @@ LSQUnit::dumpInsts() const
 {
     cprintf("Load store queue: Dumping instructions.\n");
     cprintf("Load queue size: %i\n", loadQueue.size());
-    cprintf("Load queue: ");
+    cprintf("Load queue:\n");
 
     for (const auto& e: loadQueue) {
         const DynInstPtr &inst(e.instruction());
-        cprintf("%s.[sn:%llu] ", inst->pcState(), inst->seqNum);
+        cprintf("%s.[sn:%llu]\n", inst->pcState(), inst->seqNum);
     }
     cprintf("\n");
 
     cprintf("Store queue size: %i\n", storeQueue.size());
-    cprintf("Store queue: ");
+    cprintf("Store queue:\n");
 
     for (const auto& e: storeQueue) {
         const DynInstPtr &inst(e.instruction());
-        cprintf("%s.[sn:%llu] ", inst->pcState(), inst->seqNum);
+        cprintf("%s.[sn:%llu]\n", inst->pcState(), inst->seqNum);
     }
 
     cprintf("\n");
@@ -1311,22 +1321,6 @@ unsigned int
 LSQUnit::cacheLineSize()
 {
     return cpu->cacheLineSize();
-}
-
-InstSeqNum LSQUnit::findUnresolvedStore(DynInstPtr inst, InstSeqNum last_dep_seqnum) {
-    auto store_it = inst->sqIt;
-    //for (; store_it->valid() && store_it > storeWBIt && last_dep_seqnum && last_dep_seqnum >= store_it->instruction()->seqNum; store_it--);
-    while (store_it > storeWBIt) {
-        store_it--;
-        if (!store_it->valid()) return 0;
-        assert(store_it->instruction()->seqNum < inst->seqNum);
-        int store_size = store_it->size(); //if size is 0 store has unknown address
-        if (store_size == 0) {
-            if (store_it->instruction()->seqNum == last_dep_seqnum) continue;
-            return store_it->instruction()->seqNum;
-        }
-    }
-    return 0;
 }
 
 Fault
@@ -1429,23 +1423,6 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
             bool lower_load_has_store_part = req_s < st_e;
             bool upper_load_has_store_part = req_e > st_s;
 
-	    /** uncomment to throw a mem order violation when a PND load finds a matching SQ entry
-            //check for forwarding violation caused by PND load
-            if (load_inst->isPND() && !store_it->instruction()->isAtomic() &&
-                ((st_e_dep >= req_s_dep && st_s_dep <= req_e_dep) ||
-                ((store_has_lower_limit && lower_load_has_store_part) ||
-                (store_has_upper_limit && upper_load_has_store_part) ||
-                 (lower_load_has_store_part && upper_load_has_store_part)))){
-                if ((memDepViolator && load_inst->seqNum > memDepViolator->seqNum)) break;
-                memDepViolator = load_inst;
-                ++stats.memOrderViolation;
-                return std::make_shared<GenericISA::M5PanicFault>(
-                    "Detected fault with "
-                    "inst [sn:%lli] and [sn:%lli] at address %#x\n",
-                    store_it->instruction()->seqNum, load_inst->seqNum, req_s_dep);
-            }
-	    */
-
             auto coverage = AddrRangeCoverage::NoAddrRangeCoverage;
 
             // If the store entry is not atomic (atomic does not have valid
@@ -1502,6 +1479,8 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
                 DPRINTF(LSQUnit, "Forwarding from store idx %i to load to "
                         "addr %#x\n", store_it._idx,
                         request->mainReq()->getVaddr());
+
+                load_inst->memDepInfo.forwardedFrom = store_it->instruction()->seqNum;
 
                 PacketPtr data_pkt = new Packet(request->mainReq(),
                         MemCmd::ReadReq);
@@ -1591,6 +1570,11 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
                 DPRINTF(LSQUnit, "Load-store forwarding mis-match. "
                         "Store idx %i to load addr %#x\n",
                         store_it._idx, request->mainReq()->getVaddr());
+
+                //though the load won't actually forward from this store, the store's data
+                //will still be what the load reads from cache instead of data from any
+                //older stores, so preventing violations from older matching stores is still valid
+                load_inst->memDepInfo.forwardedFrom = store_it->instruction()->seqNum;
 
                 // Must discard the request.
                 request->discard();
