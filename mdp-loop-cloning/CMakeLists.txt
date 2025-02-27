@@ -19,15 +19,36 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(SIMPLE_SS_SOURCES
-    src/SimpleSS/Main.cpp
-    src/SimpleSS/Variants.cpp
+# Common sources used by all executables
+set(Common_SOURCES
     src/Utils.cpp
 )
 
-# Add source to this project's executable.
-add_executable(SimpleSS ${SIMPLE_SS_SOURCES})
+# List of executables to process
+set(EXECUTABLES
+    SimpleSS
+    DependenceDistanceSS
+)
 
+# Define source files for each executable separately, 
+# ensuring the name is of the form ${EXEC}_SOURCES
+set(SimpleSS_SOURCES
+    src/SimpleSS/Main.cpp
+    src/SimpleSS/Variants.cpp
+)
+set(DependenceDistanceSS_SOURCES
+    src/DependenceDistanceSS/Main.cpp
+    src/DependenceDistanceSS/Variants.cpp
+)
+
+# Source directory
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
-target_include_directories(SimpleSS PRIVATE ${SRC_DIR})
-target_link_libraries(SimpleSS -static)
+
+# Loop through executables to create targets
+foreach(EXEC ${EXECUTABLES})
+    # Use the manually defined sources for each executable
+    # The ${${EXEC}_SOURCES} syntax references variables like SimpleSS_SOURCES
+    add_executable(${EXEC} ${${EXEC}_SOURCES} ${Common_SOURCES})
+    target_include_directories(${EXEC} PRIVATE ${SRC_DIR})
+    target_link_libraries(${EXEC} -static)
+endforeach()

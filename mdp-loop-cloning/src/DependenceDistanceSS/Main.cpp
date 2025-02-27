@@ -1,4 +1,4 @@
-#include "SimpleSS/Variants.h"
+#include "DependenceDistanceSS/Variants.h"
 
 #include <array>
 #include <cstddef>
@@ -6,6 +6,7 @@
 #define CLONE 1
 
 constexpr std::size_t N = 1000000;
+constexpr unsigned int distance = 2;
 
 std::array<int, N> l;
 
@@ -16,9 +17,9 @@ int main()
   int sum = 0;
 
 #if CLONE
-  sum += test_aliases_cloned(&l.front(), N);
+  sum += test_aliases_cloned(&l.front(), distance, N);
 #else
-  sum += test_aliases(&l.front(), N);
+  sum += test_aliases(&l.front(), distance, N);
 #endif
 
   return sum;

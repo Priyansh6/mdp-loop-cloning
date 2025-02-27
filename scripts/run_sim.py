@@ -3,7 +3,7 @@ import os
 import subprocess
 
 sim_result_dir_prefix = "sim-result-"
-progs = ["SimpleSS"]
+progs = ["SimpleSS", "DependenceDistanceSS"]
 rel_types = ["debug", "release-debuginfo", "release"]
 def_rel_type = rel_types[1]
 

@@ -1,29 +1,33 @@
 #include "DependenceDistanceSS/Variants.h"
+#include "Utils.h"
 
 #include <cstddef>
 
-int test_aliases(int* array, unsigned distance, int* num, std::size_t n)
+extern void potentially_modify_memory(int* a);
+
+int test_aliases(int* a, unsigned int distance, std::size_t n)
 {
   int sum = 0;
-  for (std::size_t i = distance; i < n; i++) {
+  for (std::size_t i = 0; i < n; i++) {
     if (i % distance == 0) {
-      array[i] = 2;
-    } else {
-      sum += 3;
+      a[i] = 2;
+      potentially_modify_memory(a);// This is done to ensure the compiler does not forward this store to the load below
     }
-    sum += array[i];
+    sum += a[i];
   }
   return sum;
 }
 
-int test_aliases_clone_per_iteration(int* a, unsigned distance, std::size_t n)
+int test_aliases_cloned(int* a, unsigned int distance, std::size_t n)
 {
-  for (std::size_t i = distance; i < n; i++) {
-    if (i % 2 == 0) {
-      a[i] = a[i - distance] * 2;
-    } else {
-      a[i] = a[i - distance] * 3;
+  int sum = 0;
+  for (std::size_t i = 0; i < n; i++) {
+    if (i % distance == 0) {
+      a[i] = 2;
+      potentially_modify_memory(a);
     }
-    a[i] = a[i - distance] * 2;
+    potentially_modify_memory(a);
+    sum += a[i];
   }
+  return sum;
 }
