@@ -116,7 +116,7 @@ class StoreSet
      */
     PredictionResult checkInst(Addr PC, InstSeqNum load_seq_num, BranchHistory branchHistory);
 
-    void commit(Addr load_pc, Addr load_addr, unsigned load_size, Addr store_addr, unsigned store_size, unsigned path_index, uint64_t predictor_hash) { return; };
+    void commit(Addr load_pc, Addr load_addr, unsigned load_size, Addr store_addr, unsigned store_size, unsigned path_index, uint64_t predictor_hash);
 
     /** Records this PC/sequence number as issued. */
     void issued(Addr issued_PC, InstSeqNum issued_seq_num, bool is_store);
@@ -179,6 +179,8 @@ class StoreSet
 
     /** Number of memory operations predicted since last clear of predictor */
     int memOpsPred;
+
+    unsigned depCheckShift;
 
     MemDepUnit *memDep;
 };

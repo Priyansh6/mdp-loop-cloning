@@ -112,6 +112,10 @@ MemDepUnit::MemDepUnitStats::MemDepUnitStats(statistics::Group *parent)
                "Number of conflicting loads."),
       ADD_STAT(conflictingStores, statistics::units::Count::get(),
                "Number of conflicting stores."),
+      ADD_STAT(falseDependencies, statistics::units::Count::get(),
+               "Number of falsely predicted dependencies."),
+      ADD_STAT(memoryOrderViolations, statistics::units::Count::get(),
+               "Number of store set memory order violations."),
       /** ==== Store Set ==== */
       ADD_STAT(LFSTReads, statistics::units::Count::get(),
                "Number of LFST reads."),

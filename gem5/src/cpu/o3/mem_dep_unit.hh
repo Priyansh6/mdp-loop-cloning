@@ -57,8 +57,8 @@
 #include "cpu/inst_seq.hh"
 #include "cpu/o3/dyn_inst_ptr.hh"
 #include "cpu/o3/limits.hh"
-#include "cpu/o3/phast.hh"
-//#include "cpu/o3/store_set.hh"
+// #include "cpu/o3/phast.hh"
+#include "cpu/o3/store_set.hh"
 #include "debug/MemDepUnit.hh"
 #include "mem/packet.hh"
 #include "mem/port.hh"
@@ -201,6 +201,8 @@ class MemDepUnit
         /** Stat for number of conflicting stores that had to wait for a
          *  store. */
         statistics::Scalar conflictingStores;
+        statistics::Scalar falseDependencies;
+        statistics::Scalar memoryOrderViolations;
         /** ==== Store Sets ==== */
         statistics::Scalar LFSTReads;
         statistics::Scalar LFSTWrites;
@@ -322,7 +324,7 @@ class MemDepUnit
      *  this unit what instruction the newly added instruction is dependent
      *  upon.
      */
-    PHAST depPred;
+    StoreSet depPred;
 
     /** Sequence numbers of outstanding load barriers. */
     std::unordered_set<InstSeqNum> loadBarrierSNs;

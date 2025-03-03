@@ -42,7 +42,7 @@ namespace o3
 {
 
 StoreSet::StoreSet(const BaseO3CPUParams &params, MemDepUnit *_memDep)
-    : clearPeriod(params.store_set_clear_period), SSITSize(params.SSITSize), LFSTSize(params.LFSTSize), memDep(_memDep)
+    : clearPeriod(params.store_set_clear_period), SSITSize(params.SSITSize), LFSTSize(params.LFSTSize), memDep(_memDep), depCheckShift(params.LSQDepCheckShift)
 {
     DPRINTF(StoreSet, "StoreSet: Creating store set object.\n");
     DPRINTF(StoreSet, "StoreSet: SSIT size: %i, LFST size: %i.\n",
@@ -122,6 +122,8 @@ StoreSet::init(const BaseO3CPUParams &params, MemDepUnit *_memDep)
 
 void StoreSet::violation(Addr load_PC, InstSeqNum load_seq_num, InstSeqNum store_seq_num, Addr store_PC, std::ptrdiff_t storeQueueDistance, bool predicted, unsigned predictedPathInex, uint64_t predictedHash, BranchHistory branchHistory) 
 {
+    ++(memDep->stats).memoryOrderViolations;
+
     int load_index = calcIndex(load_PC);
     int store_index = calcIndex(store_PC);
 
@@ -294,6 +296,17 @@ PredictionResult StoreSet::checkInst(Addr PC, InstSeqNum load_seq_num, BranchHis
         }
     }
 }
+
+void StoreSet::commit(Addr load_pc, Addr load_addr, unsigned load_size, Addr store_addr, unsigned store_size, unsigned path_index, uint64_t predictor_hash) { 
+    Addr load_eff_addr1 = load_addr >> depCheckShift;
+    Addr load_eff_addr2 = (load_addr + load_size - 1) >> depCheckShift;
+    Addr store_eff_addr1 = store_addr >> depCheckShift;
+    Addr store_eff_addr2 = (store_addr + store_size - 1) >> depCheckShift;
+    if (store_eff_addr2 < load_eff_addr1 || store_eff_addr1 > load_eff_addr2) {
+        ++(memDep->stats).falseDependencies;
+    }
+    return; 
+};
 
 void
 StoreSet::issued(Addr issued_PC, InstSeqNum issued_seq_num, bool is_store)
