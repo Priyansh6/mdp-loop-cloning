@@ -8,12 +8,14 @@ rel_types = ["debug", "release-debuginfo", "release"]
 def_rel_type = rel_types[1]
 
 
-def run_simulation(program, outdir, rel_type, cpu_type, options):
+def run_simulation(program, outdir, rel_type, cpu_type, debug_flags, options):
     root_path = os.path.dirname(os.path.realpath(__file__)) + "/.."
     # Gem5 command
     cmd = [f"{root_path}/gem5/build/ARM/gem5.opt"]
     if outdir:
         cmd.append(f"--outdir={sim_result_dir_prefix}{outdir}")
+    if debug_flags:
+        cmd.append(f"--debug-flags={",".join(debug_flags)}")
     # Gem5 config command
     cmd.extend(
         [
@@ -54,6 +56,11 @@ if __name__ == "__main__":
         "--cpu-type", type=str, default="DerivO3CPU", help="type of CPU to model"
     )
     parser.add_argument(
+        "--debug-flags",
+        nargs="+",
+        help="turns on debug printing for provided arguments",
+    )
+    parser.add_argument(
         "--options", type=str, help="command line options to pass to the binary"
     )
     args = parser.parse_args()
@@ -63,5 +70,6 @@ if __name__ == "__main__":
         outdir=args.outdir,
         rel_type=args.rel_type,
         cpu_type=args.cpu_type,
+        debug_flags=args.debug_flags,
         options=args.options,
     )

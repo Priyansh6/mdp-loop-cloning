@@ -42,3 +42,4 @@ scripts/venv
 sim-result-*/
 coremark-sim-result-*/
 disassembled/
+output.txt

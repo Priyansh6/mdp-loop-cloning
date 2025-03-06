@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-int test_aliases(int* a, unsigned int distance, std::size_t n);
-int test_aliases_cloned(int* a, unsigned int distance, std::size_t n);
+int test_base(int* a, unsigned int distance, std::size_t n);
+int test_cloned_load(int* a, unsigned int distance, std::size_t n);
 
-#endif// SIMPLE_SS_VARIANTS_H
+#endif// DEPENDENCE_DISTANCE_SS_VARIANTS_H

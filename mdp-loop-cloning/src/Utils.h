@@ -1,7 +1,23 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <concepts>
+
 int redundant_computation(int x);
-void potentially_modify_memory(int* a);
+
+template<typename T>
+  requires std::convertible_to<T, double>
+inline T slow_identity(T x)
+{
+  double x_d = static_cast<double>(x);
+  x_d = x_d + 0.00001;
+  x_d = x_d * 2.0;
+  x_d = x_d - 0.00001;
+  x_d = x_d / 2.0;
+  return static_cast<T>(x_d);
+};
+
+void potentially_modify_memory([[maybe_unused]] int* a);
+void potentially_modify_memory2([[maybe_unused]] int* a);
 
 #endif// UTILS_H
