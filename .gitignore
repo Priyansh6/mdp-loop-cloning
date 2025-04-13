@@ -41,5 +41,6 @@ scripts/venv
 # Project Specific
 sim-result-*/
 coremark-sim-result-*/
+coremark-perf-runs/
 disassembled/
 output.txt

@@ -14,8 +14,6 @@ progs = {
     "sha": "sha-test",
     "zip": "zip-test",
 }
-def_prog = "cjpeg"
-
 
 def run_simulation(program, outdir, cpu_type, options):
     root_path = os.path.dirname(os.path.realpath(__file__)) + "/.."

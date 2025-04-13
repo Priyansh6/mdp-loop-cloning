@@ -465,6 +465,7 @@ int idamax(),j,k,kp1,l,nm1;
 				t = -ONE/a[lda*k+k];
 				dscal(n-(k+1),t,&a[lda*k+k+1],1);
 
+				/* CRITICAL SECTION - not too critical though */
 				/* row elimination with column indexing */
 
 				for (j = kp1; j < n; j++) {
@@ -635,6 +636,7 @@ static void daxpy(int n,e_fp da,e_fp * RESTRICT dx,int incx,e_fp * RESTRICT dy,i
       		return;
 	}
 
+	/* CRITICAL SECTION - called by dgefa */
 	/* code for both increments equal to 1 */
 	for (i = 0;i < n; i++) {
 		dy[i] = dy[i] + da*dx[i];
