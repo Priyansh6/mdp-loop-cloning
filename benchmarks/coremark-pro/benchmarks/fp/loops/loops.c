@@ -934,6 +934,7 @@ e_fp adi_integration(loops_params *p) {
      *   .       + SIG*(U3(kx+1,ky,nl1) -2.*U3(kx,ky,nl1) +U3(kx-1,ky,nl1))
      *  8 CONTINUE
      */
+	/* CRITICAL SECTION */
 
     for ( l=1 ; l<=loop ; l++ ) {
 		reinit_vec(p,u1,(n+1)*3);
@@ -1192,6 +1193,7 @@ e_fp pic_2d(loops_params *p) {
             p2i[ip] += c[j1*64+i1];
             p1r[ip] += p2r[ip];
             p1i[ip] += p2i[ip];
+			/* CRITICAL SECTION */
             i2 = p1r[ip];
             j2 = p1i[ip];
             i2 &=0x03f;
@@ -1262,6 +1264,7 @@ e_fp pic_1d(loops_params *p) {
 	}
 	flx=FPCONST(0.00100e0);
 
+	/* CRITICAL SECTION */
     for ( l=1 ; l<=loop ; l++ ) {
         for ( k=0 ; k<n ; k++ ) {
             vx[k] = FPCONST(0.0);
@@ -1385,6 +1388,7 @@ e_fp casual(loops_params *p) {
                         r = vh[down];
                     s = vf[cur];
                 }
+				/* CRITICAL SECTION */
                 vy[cur] = th_sqrt( vg[cur]*vg[cur] + r*r )* t/s;
                 if ( (k+1) >= nz ) {
                     vs[cur] = FPCONST(0.0);
@@ -1746,6 +1750,7 @@ e_fp lin_recurrence(loops_params *p) {
 	reinit_vec(p,sa,n);
 	reinit_vec(p,sb,n);
 	stb5=sa[0]/sa[1];/* small random number */
+	/* CRITICAL SECTION */
     for ( l=1 ; l<=loop ; l++ ) {
 		reinit_vec(p,sa,n);
         for ( k=0 ; k<n ; k++ ) {
@@ -1801,6 +1806,7 @@ e_fp ordinate_transport(loops_params *p) {
 	t=xx[0];
 	s=xx[1];
 	dk=xx[2];
+	/* CRITICAL SECTION */
     for ( l=1 ; l<=loop ; l++ ) {
 		reinit_vec(p,xx,1); /* start a new input each outer loop iteration otherwise only last iteration will be executed */
         for ( k=0 ; k<n-1 ; k++ ) {
@@ -1844,6 +1850,7 @@ e_fp matmul(loops_params *p) {
      *    PX(i,j)= PX(i,j) +VY(i,k) * CX(k,j)
      * 21 CONTINUE
      */
+	/* CRITICAL SECTION */
 	/*SG: Add dependency on outer loop to CX so compiler cannot optimize it away to a multiply on the final result. */
     for ( l=1 ; l<=loop ; l++ ) {
         for ( k=0 ; k<25 ; k++ ) {
@@ -1883,6 +1890,7 @@ e_fp planckian(loops_params *p) {
 	reinit_vec(p,v,n); 
     u[n-1] = FPCONST(0.99)*expmax*v[n-1];
     for ( l=1 ; l<=loop ; l++ ) {
+		/* CRITICAL SECTION */
 		reinit_vec(p,v,n); /* must reinit otherwise compiler will only exec last loop */
         for ( k=0 ; k<n ; k++ ) {
             y[k] = u[k] / v[k];
@@ -1921,6 +1929,7 @@ e_fp hydro_2d_implicit(loops_params *p) {
      * 23  ZA(k,j)= ZA(k,j) +.175*(QA -ZA(k,j))
      */
 
+	/* CRITICAL SECTION */
     for ( l=1 ; l<=loop ; l++ ) {
         for ( j=1 ; j<6 ; j++ ) {
             for ( k=1 ; k<n ; k++ ) {

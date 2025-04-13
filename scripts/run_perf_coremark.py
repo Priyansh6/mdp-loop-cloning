@@ -32,7 +32,7 @@ def run_simulation(program, iterations, output):
         "--",
         "bash",
         "-c",
-        f"for i in {{1..{iterations}}}; do {root_path}/benchmarks/coremark-pro/builds/linux64/gcc64/bin/{progs[program]}.exe -v0 -i1; done",
+        f"for i in {{1..{iterations}}}; do {root_path}/benchmarks/coremark-pro/builds/linux64/gcc64/bin/{progs[program]}.exe -v0 -i1 > /dev/null; done",
     ]
     subprocess.run(cmd)
 
