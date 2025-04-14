@@ -329,6 +329,7 @@ for (neurode=0;neurode<MID_SIZE; neurode++)
 	** apply sigmoid function f(x) = 1/(1+exp(-x)) to weighted sum
 	*/
 	sum = FPCONST(1.0)/(FPCONST(1.0)+th_exp(-sum));
+	/* CRITICAL SECTION */
 	params->mid_out[neurode] = sum;
 }
 return;
@@ -355,13 +356,13 @@ for (neurode=0; neurode<OUT_SIZE; neurode++)
 		** compute weighted sum of input signals
 		** from middle layer
 		*/
-		sum += params->out_wts[neurode][i]*params->mid_out[i];
+		sum += params->out_wts[neurode][i]*params->mid_out[i]; /* CRITICAL SECTION */
 	}
 	/*
 	** Apply f(x) = 1/(1+exp(-x)) to weighted input
 	*/
 	sum = FPCONST(1.0)/(FPCONST(1.0)+th_exp(-sum));
-	params->out_out[neurode] = sum;
+	params->out_out[neurode] = sum; /* CRITICAL SECTION */
 }
 return;
 }
@@ -534,10 +535,10 @@ for (neurode=0; neurode<OUT_SIZE; neurode++)
 
 		/* now the momentum term */
 		delta += alph * params->out_wt_change[neurode][weight];
-		params->out_wts[neurode][weight] += delta;
+		params->out_wts[neurode][weight] += delta; /* CRITICAL SECTION */
 
 		/* keep track of this pass's cum wt changes for next pass's momentum */
-		params->out_wt_cum_change[neurode][weight] += delta;
+		params->out_wt_cum_change[neurode][weight] += delta; /* CRITICAL SECTION */
 	}
 }
 return;
@@ -565,11 +566,11 @@ for (neurode=0; neurode<MID_SIZE; neurode++)
 		delta = learn * params->mid_error[neurode] * params->in_pats[patt][weight];
 
 		/* with the momentum term */
-		delta += alph * params->mid_wt_change[neurode][weight];
-		params->mid_wts[neurode][weight] += delta;
+		delta += alph * params->mid_wt_change[neurode][weight]; /* CRITICAL SECTION (8.92) */
+		params->mid_wts[neurode][weight] += delta; /* CRITICAL SECTION (22.73) */
 
 		/* keep track of this pass's cum wt changes for next pass's momentum */
-		params->mid_wt_cum_change[neurode][weight] += delta;
+		params->mid_wt_cum_change[neurode][weight] += delta; /* CRITICAL SECTION (11.47) */
 	}
 }
 return;
@@ -613,6 +614,7 @@ for (i = 0; i<MID_SIZE; i++)
 		params->mid_wt_cum_change[i][j] = FPCONST(0.0);
 	}
 
+/* CRITICAL SECTION */
 for (i = 0; i<OUT_SIZE; i++)
 	for (j=0; j<MID_SIZE; j++)
 	{
