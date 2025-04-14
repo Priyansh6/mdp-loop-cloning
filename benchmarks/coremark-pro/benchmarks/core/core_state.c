@@ -70,6 +70,7 @@ ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock,
 		final_counts[i]=track_counts[i]=0;
 	}
 	/* run the state machine over the input */
+	/* CRITICAL SECTION */
 	while (*p!=0) {
 		enum CORE_STATE fstate=core_state_transition(&p,track_counts);
 		final_counts[fstate]++;
@@ -88,6 +89,7 @@ ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock,
 	}
 	p=memblock;
 	/* run the state machine over the input again */
+	/* CRITICAL SECTION */
 	while (*p!=0) {
 		enum CORE_STATE fstate=core_state_transition(&p,track_counts);
 		final_counts[fstate]++;
@@ -204,13 +206,16 @@ enum CORE_STATE core_state_transition_switch( ee_u8 **instr , ee_u32 *transition
 	ee_u8 *str=*instr;
 	ee_u8 NEXT_SYMBOL;
 	enum CORE_STATE state=CORE_START;
+	/* CRITICAL SECTION */
 	for( ; *str && state != CORE_INVALID; str++ ) {
 		NEXT_SYMBOL = *str;
+		/* CRIICAL SECTION */
 		if (NEXT_SYMBOL==',') /* end of this input */ {
 			transition_count[state]++;
 			str++;
 			break;
 		}
+		/* CRITICAL SECTION */
 		switch(state) {
 		case CORE_START:
 			if(ee_isdigit(NEXT_SYMBOL)) {
@@ -252,6 +257,7 @@ enum CORE_STATE core_state_transition_switch( ee_u8 **instr , ee_u32 *transition
 			}
 			break;
 		case CORE_FLOAT:
+			/* CRITICAL SECTION */
 			if( NEXT_SYMBOL == 'E' || NEXT_SYMBOL == 'e' ) {
 				state = CORE_S2;
 				transition_count[CORE_FLOAT]++;

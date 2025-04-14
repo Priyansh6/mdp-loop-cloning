@@ -834,6 +834,7 @@ ezxml_t ezxml_insert(ezxml_t xml, ezxml_t dest, size_t off)
 
     if ((head = dest->child)) { // already have sub tags
         if (head->off <= off) { // not first subtag
+            /* CRITICAL SECTION */
             for (cur = head; cur->ordered && cur->ordered->off <= off;
                  cur = cur->ordered);
             xml->ordered = cur->ordered;
@@ -847,6 +848,7 @@ ezxml_t ezxml_insert(ezxml_t xml, ezxml_t dest, size_t off)
         for (cur = head, prev = NULL; cur && th_strcmp(cur->name, xml->name);
              prev = cur, cur = cur->sibling); // find tag type
         if (cur && cur->off <= off) { // not first of type
+            /* CRITICAL SECTION */
             while (cur->next && cur->next->off <= off) cur = cur->next;
             xml->next = cur->next;
             cur->next = xml;

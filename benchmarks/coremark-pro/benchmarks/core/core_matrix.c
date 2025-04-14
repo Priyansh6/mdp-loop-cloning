@@ -291,6 +291,7 @@ void matrix_mul_matrix(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	Multiply a matrix by a matrix, and extract some bits from the result.
 	Basic code is used in many algorithms, mostly with minor changes such as scaling.
 */
+/* CRITICAL SECTION */
 void matrix_mul_matrix_bitextract(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j,k;
 	for (i=0; i<N; i++) {

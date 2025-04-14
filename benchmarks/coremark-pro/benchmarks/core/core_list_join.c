@@ -364,6 +364,7 @@ list_head *core_list_undo_remove(list_head *item_removed, list_head *item_modifi
 	Returns:
 	Found item, or NULL if not found.
 */
+/* CRITICAL SECTION */
 list_head *core_list_find(list_head *head,list_data *info) {
 	list_head *list=head;
 	if (info->idx>=0) {
@@ -390,6 +391,7 @@ list_head *core_list_find(list_head *head,list_data *info) {
 	Found item, or NULL if not found.
 */
 
+/* CRITICAL SECTION */
 list_head *core_list_reverse(list_head *list) {
 	list_head *next=NULL, *tmp;
 	while (list) {
