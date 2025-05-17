@@ -482,4 +482,7 @@ extern size_t th_malloc_total;
 extern size_t th_malloc_max;
 #endif
 
+void potentially_modify_memory1(float* a);
+void potentially_modify_memory2(float* a);
+
 #endif /*THLIB_H_FILE*/ 

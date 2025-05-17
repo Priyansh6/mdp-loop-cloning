@@ -22,6 +22,8 @@ Please refer to LICENSE.md for the specific license agreement that pertains to t
 #include "th_rand.h" /* initialize a random data vector */
 #include "linpack.h"
 #define DEBUG_LINPACK 0
+#define CLONE_OPTIM 0
+#define CLONE_OPTIM2 1
 #if DEBUG_LINPACK || BMDEBUG
 static int dbgi=1;
 #endif
@@ -469,7 +471,19 @@ int idamax(),j,k,kp1,l,nm1;
 				/* row elimination with column indexing */
 
 				for (j = kp1; j < n; j++) {
+					// POTENTIAL OPTIMISATION
+					#if CLONE_OPTIM
+					if (l != k) {
+						potentially_modify_memory1(a);
+						t = a[lda*j+l];
+					} else {
+						potentially_modify_memory2(a);
+						t = a[lda*j+l];
+					}
+					#else
+					potentially_modify_memory1(a);
 					t = a[lda*j+l];
+					#endif
 					if (l != k) {
 						a[lda*j+l] = a[lda*j+k];
 						a[lda*j+k] = t;
@@ -628,19 +642,49 @@ static void daxpy(int n,e_fp da,e_fp * RESTRICT dx,int incx,e_fp * RESTRICT dy,i
 		iy = 0;
 		if(incx < 0) ix = (-n+1)*incx;
 		if(incy < 0)iy = (-n+1)*incy;
+		// POTENTIAL OPTIMISATION
+		#if CLONE_OPTIM2
+		if (dx == dy) {
+			for (i = 0;i < n; i++) {
+				dy[iy] = dy[iy] + da*dx[ix];
+				ix = ix + incx;
+				iy = iy + incy;
+			}
+		} else {
+			for (i = 0;i < n; i++) {
+				dy[iy] = dy[iy] + da*dx[ix];
+				ix = ix + incx;
+				iy = iy + incy;
+			}
+		}
+		#else
 		for (i = 0;i < n; i++) {
 			dy[iy] = dy[iy] + da*dx[ix];
 			ix = ix + incx;
 			iy = iy + incy;
 		}
-      		return;
+		#endif
+		return;
 	}
 
 	/* CRITICAL SECTION - called by dgefa */
 	/* code for both increments equal to 1 */
+	// POTENTIAL OPTIMISATION
+	#if CLONE_OPTIM2
+	if (dy == dx) {
+		for (i = 0;i < n; i++) {
+			dy[i] = dy[i] + da*dx[i];
+		}
+	} else {
+		for (i = 0;i < n; i++) {
+			dy[i] = dy[i] + da*dx[i];
+		}
+	}
+	#else
 	for (i = 0;i < n; i++) {
 		dy[i] = dy[i] + da*dx[i];
 	}
+	#endif
 }
    
 /*----------------------*/ 

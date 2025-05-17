@@ -136,6 +136,7 @@
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
 #include "llvm/Transforms/AliasHints/AliasHints.h"
+#include "llvm/Transforms/LoopClone/LoopClone.h"
 
 using namespace llvm;
 
@@ -1491,6 +1492,7 @@ PassBuilder::buildModuleOptimizationPipeline(OptimizationLevel Level,
   FunctionPassManager OptimizePM2;
   LoopPassManager LPM2;
   LPM2.addPass(AliasHintsPass());
+  LPM2.addPass(LoopClonePass());
   OptimizePM2.addPass(createFunctionToLoopPassAdaptor(
       std::move(LPM2), /*UseMemorySSA=*/false, /*UseBlockFrequencyInfo=*/false));
   // Add the core optimizing pipeline.

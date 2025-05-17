@@ -43,4 +43,5 @@ sim-result-*/
 coremark-sim-result-*/
 coremark-perf-runs/
 disassembled/
+disassembled-coremark/
 output.txt

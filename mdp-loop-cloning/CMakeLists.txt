@@ -11,6 +11,7 @@ set(CMAKE_CXX_COMPILER_TARGET "aarch64-linux-gnu")
 
 # Set target-specific flags
 add_compile_options(-march=v8a -fno-vectorize)
+# add_compile_options(-fno-vectorize)
 
 project(mdp-loop-cloning)
 
@@ -26,19 +27,25 @@ set(Common_SOURCES
 
 # List of executables to process
 set(EXECUTABLES
-    SimpleSS
-    DependenceDistanceSS
+    LoopClone
+    DependenceDistance
+    PassTests
 )
 
 # Define source files for each executable separately, 
 # ensuring the name is of the form ${EXEC}_SOURCES
-set(SimpleSS_SOURCES
-    src/SimpleSS/Main.cpp
-    src/SimpleSS/Variants.cpp
+set(LoopClone_SOURCES
+    src/LoopClone/Main.cpp
+    src/LoopClone/Variants.cpp
 )
-set(DependenceDistanceSS_SOURCES
-    src/DependenceDistanceSS/Main.cpp
-    src/DependenceDistanceSS/Variants.cpp
+set(DependenceDistance_SOURCES
+    src/DependenceDistance/Main.cpp
+    src/DependenceDistance/Variants.cpp
+)
+
+set(PassTests_SOURCES
+    src/PassTests/Main.cpp
+    src/PassTests/Variants.cpp
 )
 
 # Source directory
@@ -47,7 +54,7 @@ set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 # Loop through executables to create targets
 foreach(EXEC ${EXECUTABLES})
     # Use the manually defined sources for each executable
-    # The ${${EXEC}_SOURCES} syntax references variables like SimpleSS_SOURCES
+    # The ${${EXEC}_SOURCES} syntax references variables like LoopClone_SOURCES
     add_executable(${EXEC} ${${EXEC}_SOURCES} ${Common_SOURCES})
     target_include_directories(${EXEC} PRIVATE ${SRC_DIR})
     target_link_libraries(${EXEC} -static)

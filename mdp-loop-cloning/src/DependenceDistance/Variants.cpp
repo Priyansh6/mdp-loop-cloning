@@ -1,4 +1,4 @@
-#include "DependenceDistanceSS/Variants.h"
+#include "DependenceDistance/Variants.h"
 #include "Utils.h"
 
 #include <cstddef>

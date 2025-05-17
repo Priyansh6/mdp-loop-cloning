@@ -24,8 +24,8 @@ endif
 # SYSTEM ENVIRONMENT SECTION
 
 # Tools Root Directory
-#TOOLS	= /usr/aarch64-linux-gnu/
-TOOLS	= /usr
+TOOLS	= /usr/aarch64-linux-gnu/
+# TOOLS	= /usr
 # For Solaris
 #TOOLS	= /usr/local
 # For Solaris
@@ -42,8 +42,8 @@ TOOLS	= /usr
 
 # Variable: CC
 #	name of the compiler
-#CC		= /home/priyansh/projects/mdp-loop-cloning/llvm/build/bin/clang --target=aarch64-linux-gnu -static -march=armv8-a
-CC		= $(TOOLS)/bin/clang
+CC		= /home/priyansh/projects/mdp-loop-cloning/llvm/build/bin/clang --target=aarch64-linux-gnu -static -march=armv8-a
+# CC		= $(TOOLS)/bin/clang
 # Solaris: /usr/ccs/bin/as requires space after -o passed from gcc.
 #OBJOUT = -o \#
 OBJOUT	= -o
@@ -54,8 +54,8 @@ OEXT = .o
 
 AS		= $(TOOLS)/bin/as
 
-#LD		= /home/priyansh/projects/mdp-loop-cloning/llvm/build/bin/clang --target=aarch64-linux-gnu -static -march=armv8-a
-LD		= $(TOOLS)/bin/clang
+LD		= /home/priyansh/projects/mdp-loop-cloning/llvm/build/bin/clang --target=aarch64-linux-gnu -static -march=armv8-a
+# LD		= $(TOOLS)/bin/clang
 EXEOUT	= -o
 EXE		= .exe
 
@@ -82,8 +82,8 @@ INCLUDE = $(TOOLS)/include
 # -O2			 Optimize for speed
 
 # COMPILER_FLAGS	= -O3 $(CDEFN)NDEBUG $(CDEFN)HOST_EXAMPLE_CODE=1 -std=gnu99
-# COMPILER_FLAGS	= -O2 -g $(CDEFN)NDEBUG $(CDEFN)HOST_EXAMPLE_CODE=1 -std=gnu99
-COMPILER_FLAGS	= -O2 -fno-inline-functions -g $(CDEFN)NDEBUG $(CDEFN)HOST_EXAMPLE_CODE=1 -std=gnu99
+COMPILER_FLAGS	= -O2 -g $(CDEFN)NDEBUG $(CDEFN)HOST_EXAMPLE_CODE=1 -std=gnu99
+# COMPILER_FLAGS	= -O2 -fno-inline-functions -g $(CDEFN)NDEBUG $(CDEFN)HOST_EXAMPLE_CODE=1 -std=gnu99
 COMPILER_NOOPT	= -O0 -g $(CDEFN)NDEBUG $(CDEFN)HOST_EXAMPLE_CODE=1
 COMPILER_DEBUG	= -O0 -g $(CDEFN)HOST_EXAMPLE_CODE=1 -DBMDEBUG=1 -DTHDEBUG=1
 PACK_OPTS = 

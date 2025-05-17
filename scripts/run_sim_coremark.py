@@ -15,6 +15,7 @@ progs = {
     "zip": "zip-test",
 }
 
+
 def run_simulation(program, outdir, cpu_type, options):
     root_path = os.path.dirname(os.path.realpath(__file__)) + "/.."
     # Gem5 command
@@ -56,7 +57,10 @@ if __name__ == "__main__":
         "--cpu-type", type=str, default="DerivO3CPU", help="type of CPU to model"
     )
     parser.add_argument(
-        "--options", type=str, help="command line options to pass to the binary"
+        "--options",
+        type=str,
+        default="-v0 -i1",
+        help="command line options to pass to the binary",
     )
     args = parser.parse_args()
 

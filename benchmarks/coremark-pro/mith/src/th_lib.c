@@ -2312,3 +2312,6 @@ void get_auto_data_byte(char *fname,e_u8 **out,int *numread){
 void get_auto_data_dbl(char *fname,e_f64 **out,int *numread){
 	get_auto_data(fname,NULL,out,NULL,numread);
 }
+
+void potentially_modify_memory1(float* a) { return; }
+void potentially_modify_memory2(float* a) { return; }
