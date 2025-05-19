@@ -254,7 +254,7 @@ PreservedAnalyses LoopClonePass::run(LoopNest &LN, LoopAnalysisManager &AM,
   //                   InnerLoop,      &AR.LI,
   //                   &AR.DT, &AR.SE};
   // LV.versionLoop();
-  versionLoop(InnerLoop, AR, LAI);
+  // versionLoop(InnerLoop, AR, LAI);
 
   return PreservedAnalyses::all();
 }

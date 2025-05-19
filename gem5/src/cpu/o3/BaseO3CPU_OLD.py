@@ -152,8 +152,8 @@ class BaseO3CPU(BaseCPU):
         "Number of load/store insts before the dep predictor "
         "should be invalidated",
     )
-    LFSTSize = Param.Unsigned(128, "Last fetched store table size")
-    SSITSize = Param.Unsigned(128, "Store set ID table size")
+    LFSTSize = Param.Unsigned(512, "Last fetched store table size")
+    SSITSize = Param.Unsigned(512, "Store set ID table size")
 
     phast_num_rows = Param.Unsigned(128, "Number of rows per table")
     phast_associativity = Param.Unsigned(4, "Number of entries per row")

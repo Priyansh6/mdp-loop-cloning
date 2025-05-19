@@ -3,9 +3,9 @@
 #include <array>
 #include <cstddef>
 
-#define OVERLAP 1
 #define CLONE 1
-#define OVERLAP_SIZE 3
+#define OVERLAP 0
+#define OVERLAP_SIZE 1
 
 constexpr int num_iters = 100;
 constexpr std::size_t N = 10000;
@@ -29,8 +29,10 @@ int main()
   }
 #else
   for (int i = 0; i < num_iters; i++) {
-    sum += test_cloned_loop(&l.front(), &l.front(), 10);
-    sum += test_cloned_loop(&l.front(), &k.front(), N);
+    // sum += test_cloned_loop(&l.front(), &l.front(), 10);
+    // sum += test_cloned_loop(&l.front(), &k.front(), N);
+    sum += test_cloned_loop_with_overlap_check(&l.front(), &l.front(), 10);
+    sum += test_cloned_loop_with_overlap_check(&l.front(), &k.front(), N);
   }
 #endif
 #else

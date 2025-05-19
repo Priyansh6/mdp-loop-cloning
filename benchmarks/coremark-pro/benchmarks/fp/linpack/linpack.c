@@ -23,7 +23,7 @@ Please refer to LICENSE.md for the specific license agreement that pertains to t
 #include "linpack.h"
 #define DEBUG_LINPACK 0
 #define CLONE_OPTIM 0
-#define CLONE_OPTIM2 1
+#define CLONE_OPTIM2 0
 #if DEBUG_LINPACK || BMDEBUG
 static int dbgi=1;
 #endif

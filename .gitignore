@@ -45,3 +45,4 @@ coremark-perf-runs/
 disassembled/
 disassembled-coremark/
 output.txt
+build_out.txt

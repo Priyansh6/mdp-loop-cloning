@@ -20,4 +20,18 @@ inline T slow_identity(T x)
 void potentially_modify_memory([[maybe_unused]] int* a);
 void potentially_modify_memory2([[maybe_unused]] int* a);
 
+inline int computeComplexSum(int a, int b)
+{
+  int temp = a + b;
+  temp = temp * (a - b);
+  temp = temp ^ (a + temp);
+  temp = temp >> 2;
+  temp = temp + a * b;
+  temp = temp * (a - b);
+  temp = temp ^ (a + temp);
+  temp = temp >> 2;
+  temp = temp + a * b;
+  return temp;
+}
+
 #endif// UTILS_H
