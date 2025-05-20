@@ -3,7 +3,7 @@
 #include <array>
 #include <cstddef>
 
-#define CLONE 1
+#define CLONE 0
 
 constexpr std::size_t N = 1000000;
 constexpr unsigned int distance = 2;
