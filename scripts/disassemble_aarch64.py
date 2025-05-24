@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 dissasemble_dir = "disassembled"
-progs = ["LoopClone", "DependenceDistance"]
+progs = ["LoopClone", "DependenceDistance", "PassTests"]
 rel_types = ["debug", "release-debuginfo", "release"]
 def_rel_type = rel_types[1]
 

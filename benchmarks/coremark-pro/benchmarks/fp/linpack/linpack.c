@@ -622,7 +622,7 @@ static void dgesl(e_fp * RESTRICT a,int lda,int n,e_u16 ipvt[],e_fp * RESTRICT b
 
 /*----------------------*/ 
 
-static void daxpy(int n,e_fp da,e_fp * RESTRICT dx,int incx,e_fp * RESTRICT dy,int incy)
+static void daxpy(int n,e_fp da,e_fp * dx,int incx,e_fp * dy,int incy)
 /*
      constant times a vector plus a vector.
      jack dongarra, linpack, 3/11/78.
@@ -643,27 +643,27 @@ static void daxpy(int n,e_fp da,e_fp * RESTRICT dx,int incx,e_fp * RESTRICT dy,i
 		if(incx < 0) ix = (-n+1)*incx;
 		if(incy < 0)iy = (-n+1)*incy;
 		// POTENTIAL OPTIMISATION
-		#if CLONE_OPTIM2
-		if (dx == dy) {
-			for (i = 0;i < n; i++) {
-				dy[iy] = dy[iy] + da*dx[ix];
-				ix = ix + incx;
-				iy = iy + incy;
-			}
-		} else {
-			for (i = 0;i < n; i++) {
-				dy[iy] = dy[iy] + da*dx[ix];
-				ix = ix + incx;
-				iy = iy + incy;
-			}
-		}
-		#else
+		// #if CLONE_OPTIM2
+		// if (dx == dy) {
+		// 	for (i = 0;i < n; i++) {
+		// 		dy[iy] = dy[iy] + da*dx[ix];
+		// 		ix = ix + incx;
+		// 		iy = iy + incy;
+		// 	}
+		// } else {
+		// 	for (i = 0;i < n; i++) {
+		// 		dy[iy] = dy[iy] + da*dx[ix];
+		// 		ix = ix + incx;
+		// 		iy = iy + incy;
+		// 	}
+		// }
+		// #else
 		for (i = 0;i < n; i++) {
 			dy[iy] = dy[iy] + da*dx[ix];
 			ix = ix + incx;
 			iy = iy + incy;
 		}
-		#endif
+		// #endif
 		return;
 	}
 

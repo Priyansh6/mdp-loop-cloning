@@ -223,8 +223,14 @@ void versionLoop(Loop *VersionedLoop, LoopStandardAnalysisResults &AR,
   assert(NonVersionedLoop->isLoopSimplifyForm() &&
          VersionedLoop->isLoopSimplifyForm() &&
          "The versioned loops should be in simplify form.");
+}
 
-  outs() << "Num of checks: " << LAI.getNumRuntimePointerChecks() << "\n";
+int getNumInstructionsInLoop(Loop *L) {
+  int count = 0;
+  for (auto *BB : L->getBlocks()) {
+    count += BB->size();
+  }
+  return count;
 }
 
 PreservedAnalyses LoopClonePass::run(LoopNest &LN, LoopAnalysisManager &AM,
@@ -250,11 +256,17 @@ PreservedAnalyses LoopClonePass::run(LoopNest &LN, LoopAnalysisManager &AM,
   //   }
   // }
   LoopAccessInfo LAI{InnerLoop, &AR.SE, &AR.TLI, &AR.AA, &AR.DT, &AR.LI};
-  // LoopVersioning LV{LAI, LAI.getRuntimePointerChecking()->getChecks(),
-  //                   InnerLoop,      &AR.LI,
-  //                   &AR.DT, &AR.SE};
-  // LV.versionLoop();
-  // versionLoop(InnerLoop, AR, LAI);
+  LoopVersioning LV{LAI, LAI.getRuntimePointerChecking()->getChecks(),
+                    InnerLoop,      &AR.LI,
+                    &AR.DT, &AR.SE};
+  auto num_checks = LAI.getNumRuntimePointerChecks();
+  outs() << "Num of checks: " << num_checks << "\n";
+  int num_instructions = getNumInstructionsInLoop(InnerLoop);
+  if (num_checks != 0 && num_checks <= 2) {
+    outs() << "Versioning loop with " << num_instructions << " instructions.\n";
+    versionLoop(InnerLoop, AR, LAI);
+    // LV.versionLoop();
+  }
 
   return PreservedAnalyses::all();
 }

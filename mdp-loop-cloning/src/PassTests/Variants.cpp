@@ -1,8 +1,8 @@
 #include "PassTests/Variants.h"
 #include "Utils.h"
 
-#include <cstddef>
 #include <chrono>
+#include <cstddef>
 
 // volatile int sink = 0;
 
@@ -21,7 +21,7 @@ int test_base(int* a, int* b, std::size_t n)
 {
   int sum = 0;
   for (std::size_t i = 0; i < n; i++) {
-    a[i] = 2; 
+    a[i] = 2;
     sum += b[i];
     // do_some_work(i);
   }
