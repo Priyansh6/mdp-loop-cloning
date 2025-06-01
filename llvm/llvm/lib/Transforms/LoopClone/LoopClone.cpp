@@ -225,6 +225,86 @@ void versionLoop(Loop *VersionedLoop, LoopStandardAnalysisResults &AR,
          "The versioned loops should be in simplify form.");
 }
 
+void prepareNoAliasMetadata(
+    Loop *VersionedLoop, LoopAccessInfo &LAI,
+    const ArrayRef<RuntimePointerCheck> &AliasChecks,
+    DenseMap<const RuntimeCheckingPtrGroup *, MDNode *>
+        &GroupToNonAliasingScopeList,
+    DenseMap<const RuntimeCheckingPtrGroup *, MDNode *> &GroupToScope,
+    DenseMap<const Value *, const RuntimeCheckingPtrGroup *> &PtrToGroup) {
+
+  // We need to turn the no-alias relation between pointer checking groups into
+  // no-aliasing annotations between instructions.
+  //
+  // We accomplish this by mapping each pointer checking group (a set of
+  // pointers memchecked together) to an alias scope and then also mapping each
+  // group to the list of scopes it can't alias.
+
+  const RuntimePointerChecking *RtPtrChecking = LAI.getRuntimePointerChecking();
+  LLVMContext &Context = VersionedLoop->getHeader()->getContext();
+
+  // First allocate an aliasing scope for each pointer checking group.
+  //
+  // While traversing through the checking groups in the loop, also create a
+  // reverse map from pointers to the pointer checking group they were assigned
+  // to.
+  MDBuilder MDB(Context);
+  MDNode *Domain = MDB.createAnonymousAliasScopeDomain("LVerDomain");
+
+  for (const auto &Group : RtPtrChecking->CheckingGroups) {
+    GroupToScope[&Group] = MDB.createAnonymousAliasScope(Domain);
+
+    for (unsigned PtrIdx : Group.Members)
+      PtrToGroup[RtPtrChecking->getPointerInfo(PtrIdx).PointerValue] = &Group;
+  }
+
+  // Go through the checks and for each pointer group, collect the scopes for
+  // each non-aliasing pointer group.
+  DenseMap<const RuntimeCheckingPtrGroup *, SmallVector<Metadata *, 4>>
+      GroupToNonAliasingScopes;
+
+  for (const auto &Check : AliasChecks)
+    GroupToNonAliasingScopes[Check.first].push_back(GroupToScope[Check.second]);
+
+  // Finally, transform the above to actually map to scope list which is what
+  // the metadata uses.
+
+  for (const auto &Pair : GroupToNonAliasingScopes)
+    GroupToNonAliasingScopeList[Pair.first] = MDNode::get(Context, Pair.second);
+}
+
+void annotateInstWithNoAlias(
+    LLVMContext &Context, Instruction *VersionedInst,
+    const Instruction *OrigInst,
+    DenseMap<const Value *, const RuntimeCheckingPtrGroup *> &PtrToGroup,
+    DenseMap<const RuntimeCheckingPtrGroup *, MDNode *> &GroupToScope,
+    DenseMap<const RuntimeCheckingPtrGroup *, MDNode *>
+        &GroupToNonAliasingScopeList) {
+
+  const Value *Ptr = isa<LoadInst>(OrigInst)
+                         ? cast<LoadInst>(OrigInst)->getPointerOperand()
+                         : cast<StoreInst>(OrigInst)->getPointerOperand();
+
+  // Find the group for the pointer and then add the scope metadata.
+  auto Group = PtrToGroup.find(Ptr);
+  if (Group != PtrToGroup.end()) {
+    VersionedInst->setMetadata(
+        LLVMContext::MD_alias_scope,
+        MDNode::concatenate(
+            VersionedInst->getMetadata(LLVMContext::MD_alias_scope),
+            MDNode::get(Context, GroupToScope[Group->second])));
+
+    // Add the no-alias metadata.
+    auto NonAliasingScopeList = GroupToNonAliasingScopeList.find(Group->second);
+    if (NonAliasingScopeList != GroupToNonAliasingScopeList.end())
+      VersionedInst->setMetadata(
+          LLVMContext::MD_noalias,
+          MDNode::concatenate(
+              VersionedInst->getMetadata(LLVMContext::MD_noalias),
+              NonAliasingScopeList->second));
+  }
+}
+
 int getNumInstructionsInLoop(Loop *L) {
   int count = 0;
   for (auto *BB : L->getBlocks()) {
@@ -256,16 +336,30 @@ PreservedAnalyses LoopClonePass::run(LoopNest &LN, LoopAnalysisManager &AM,
   //   }
   // }
   LoopAccessInfo LAI{InnerLoop, &AR.SE, &AR.TLI, &AR.AA, &AR.DT, &AR.LI};
-  LoopVersioning LV{LAI, LAI.getRuntimePointerChecking()->getChecks(),
-                    InnerLoop,      &AR.LI,
-                    &AR.DT, &AR.SE};
+  ArrayRef<RuntimePointerCheck> AliasChecks =
+      LAI.getRuntimePointerChecking()->getChecks();
+  LoopVersioning LV{LAI, AliasChecks, InnerLoop, &AR.LI, &AR.DT, &AR.SE};
   auto num_checks = LAI.getNumRuntimePointerChecks();
   outs() << "Num of checks: " << num_checks << "\n";
   int num_instructions = getNumInstructionsInLoop(InnerLoop);
-  if (num_checks != 0 && num_checks <= 2) {
+  if (num_checks != 0 && InnerLoop->getExitBlock() && num_checks <= 16) {
     outs() << "Versioning loop with " << num_instructions << " instructions.\n";
-    versionLoop(InnerLoop, AR, LAI);
-    // LV.versionLoop();
+    // versionLoop(InnerLoop, AR, LAI);
+    LV.versionLoop();
+
+    // DenseMap<const Value *, const RuntimeCheckingPtrGroup *> PtrToGroup;
+    // DenseMap<const RuntimeCheckingPtrGroup *, MDNode *> GroupToScope;
+    // DenseMap<const RuntimeCheckingPtrGroup *, MDNode *>
+    //     GroupToNonAliasingScopeList;
+    // prepareNoAliasMetadata(InnerLoop, LAI, AliasChecks,
+    //                        GroupToNonAliasingScopeList, GroupToScope,
+    //                        PtrToGroup);
+    // for (Instruction *I : LAI.getDepChecker().getMemoryInstructions()) {
+    //   annotateInstWithNoAlias(InnerLoop->getHeader()->getContext(), I, I,
+    //                           PtrToGroup, GroupToScope,
+    //                           GroupToNonAliasingScopeList);
+    // }
+    LV.annotateLoopWithNoAlias();
   }
 
   return PreservedAnalyses::all();
@@ -274,19 +368,19 @@ PreservedAnalyses LoopClonePass::run(LoopNest &LN, LoopAnalysisManager &AM,
 llvm::PassPluginLibraryInfo getLoopClonePassPluginInfo() {
   return {LLVM_PLUGIN_API_VERSION, "LoopClone", LLVM_VERSION_STRING,
           [](PassBuilder &PB) {
-            // PB.registerLateLoopOptimizationsEPCallback(
-            //     [](llvm::LoopPassManager &LPM, OptimizationLevel Level) {
-            //       LPM.addPass(LoopClonePass());
-            //     });
-            // PB.registerPipelineParsingCallback(
-            //     [](StringRef Name, llvm::LoopPassManager &LPM,
-            //        ArrayRef<llvm::PassBuilder::PipelineElement>) {
-            //       if (Name == "loop-clone") {
-            //         LPM.addPass(LoopClonePass());
-            //         return true;
-            //       }
-            //       return false;
-            //     });
+              PB.registerLateLoopOptimizationsEPCallback(
+                  [](llvm::LoopPassManager &LPM, OptimizationLevel Level) {
+                    LPM.addPass(LoopClonePass());
+                  });
+              PB.registerPipelineParsingCallback(
+                  [](StringRef Name, llvm::LoopPassManager &LPM,
+                     ArrayRef<llvm::PassBuilder::PipelineElement>) {
+                    if (Name == "loop-clone") {
+                      LPM.addPass(LoopClonePass());
+                      return true;
+                    }
+                    return false;
+                  });
           }};
 }
 

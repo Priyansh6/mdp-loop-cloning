@@ -44,6 +44,7 @@ coremark-sim-result-*/
 coremark-perf-runs/
 disassembled/
 disassembled-coremark/
+benchmarks/spec2017-x86/
 output.txt
 build_out.txt
 build_out_16.txt

@@ -305,8 +305,7 @@ void StoreSet::commit(Addr load_pc, Addr load_addr, unsigned load_size, Addr sto
     if (store_eff_addr2 < load_eff_addr1 || store_eff_addr1 > load_eff_addr2) {
         ++(memDep->stats).falseDependencies;
     }
-    return; 
-};
+}
 
 void
 StoreSet::issued(Addr issued_PC, InstSeqNum issued_seq_num, bool is_store)

@@ -3,7 +3,7 @@
 #include <array>
 #include <cstddef>
 
-#define CLONE 1
+#define CLONE 0
 #define OVERLAP 0
 #define OVERLAP_SIZE 1
 

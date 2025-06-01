@@ -622,7 +622,7 @@ static void dgesl(e_fp * RESTRICT a,int lda,int n,e_u16 ipvt[],e_fp * RESTRICT b
 
 /*----------------------*/ 
 
-static void daxpy(int n,e_fp da,e_fp * dx,int incx,e_fp * dy,int incy)
+static void daxpy(int n,e_fp da,e_fp * RESTRICT dx,int incx,e_fp * RESTRICT dy,int incy)
 /*
      constant times a vector plus a vector.
      jack dongarra, linpack, 3/11/78.

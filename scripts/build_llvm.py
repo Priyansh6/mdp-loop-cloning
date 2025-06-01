@@ -14,7 +14,7 @@ def build_llvm():
         "llvm",
         "-DCMAKE_BUILD_TYPE=MinSizeRel",
         "-DLLVM_ENABLE_PROJECTS='clang'",
-        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+        "-DLLVM_TARGETS_TO_BUILD=AArch64;X86",
         "-DLLVM_ALIASHINTSPASS_LINK_INTO_TOOLS=ON",
         "-DLLVM_LOOPCLONEPASS_LINK_INTO_TOOLS=ON",
     ]

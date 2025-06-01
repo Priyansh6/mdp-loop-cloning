@@ -10,6 +10,7 @@ set(CMAKE_C_COMPILER_TARGET "aarch64-linux-gnu")
 set(CMAKE_CXX_COMPILER_TARGET "aarch64-linux-gnu")
 
 # Set target-specific flags
+# add_compile_options(-march=v8a)
 add_compile_options(-march=v8a -fno-vectorize)
 # add_compile_options(-fno-vectorize)
 
