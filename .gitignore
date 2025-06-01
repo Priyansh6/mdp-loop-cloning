@@ -49,3 +49,6 @@ output.txt
 build_out.txt
 build_out_16.txt
 build_out_16_modcheck_4.txt
+SimPoint/analysiscode/*.d
+SimPoint/analysiscode/*.o
+SimPoint/bin/simpoint
